@@ -1,4 +1,5 @@
 # Paper Scoping doc for Oscar Heath
+## Google Doc Version available: https://docs.google.com/document/d/1TgcrHUg7KH8kwJlQXGF2qzqVS9HNJe7taVjMU1yrf84/edit?usp=sharing
 
 See pdf at /Paper_Scoping__Oscar_Heath.pdf, main.tex + references.bib are the source code
 
