@@ -1,0 +1,76 @@
+\documentclass{scrartcl}
+\usepackage{graphicx} % Required for inserting images
+
+\title{Paper Scoping: Oscar Heath}
+\author{Oscar Heath}
+\date{May 2026}
+\bibliographystyle{plain}
+
+\begin{document}
+
+\maketitle
+\begin{abstract}
+    Silicon Sampling - the process of using persona-prompted Large Language Models (LLMs) to generate human-like data \cite{Argyle} - offers a promising way to cut down monetary and time costs of research, specifically in areas where a survey would typically be needed. A survey that would otherwise take multiple months and thousands of dollars can be simulated in a lab in a few hours for a trivial cost. If synthetic data can truly approximate real responses, this would accelerate social science research, and could be used to inform various political decisions. However, the question of whether silicon data actually approximates real data is very much up for debate. Silicon Sampling remains a controversial method, and many researchers doubt the accuracy of the synthetic data.
+\end{abstract}
+
+\section{Problem}
+One of the most important weaknesses identified in synthetic sampling is LLM overconfidence. When generating synthetic responses to the ANES survey, Bisbee found that the distribution of responses for specific populations had far less variance than in real life, leading to data with more extreme views than in reality \cite{Bisbee}. He argues that promising results like Argyle's \cite{Argyle} work well when applied to broad groups, but break down on smaller levels of predictions. This severely limits the statistical analysis (if any) that we can perform on the synthetic data.
+
+\section{Research Question}
+The question is as follows: can LLMs calibrated on different population groups to improve their algorithmic fidelity \cite{Argyle}? If so, can these learned parameters generalize across studies? 
+
+\section{Related Work}
+This project will build off of previous work in both synthetic sampling, as well as in Machine Learning (ML) calibration.
+
+Primarily, we will be building off of Lisa Argyle's paper \textit{Out of One, Many} \cite{Argyle}, upon which all of synthetic sampling is built off of. Fundamentally, we will be trying to address the concerns raised by Bisbee \cite{Bisbee} namely LLM overconfidence.\\
+
+Secondly, we will be applying methods from the field of ML calibration, defined as follows: ``Calibration makes sure that a model’s estimated probabilities match real-world likelihoods. For example, if a weather forecasting model predicts a 70\% chance of rain on several days, then roughly 70\% of those days should actually be rainy for the model to be considered well calibrated'' \cite{calibration}. Calibration is an important problem, specifically in modern ML systems, which seem to be getting further miscalibrated despite accuracy improving \cite{guo}. Recent work studies calibration specifically in LLMs \cite{shen}.
+
+\section{Sharing Work}
+\textbf{Primary}: Publish research article in \textit{Political Analysis}, following up on Argyle and Bisbee's work which are in this journal. Also could submit to IC2S2: International Conference on Computational Social Science, as this seems like a natural fit.\\
+\textbf{Secondary}: Otherwise, this can go to computation social science journals, interdisciplinary journals, or data science journals. I also would be happy to present this work at UofT poster presentations like the DSI Talent Showcase or ARIA 2026.
+
+\section{Method}
+The simplest way to run this experiment is as follows:
+Take the dataset from Argyle et al. \cite{Argyle} (ANES dataset), and calibrate LLMs on the different populations. We can do different levels of calibration, but I want to start with just running simple temperature calibration \cite{guo}. For each population subgroup $g$, we want to learn $T_g$, the temperature setting that minimizes the KL divergence $KL(P_{ANES} || P_{Synthetic})$.
+This can be done in one of two ways:
+\begin{enumerate}
+    \item We can use a closed source model (eg Claude, Gemini, GPT...) and learn calibration empirically, searching a range of preset values. Given that we only have samples, we would need to generate many samples, and approximate the output distribution of the LLM, calculate KL divergence, then take the best $\hat{T_g}$ for each group
+    \item We can use an open-weight model, freeze the weights, and train a calibration head on top of it. This has the benefit of giving us a continuous loss function, so we won't have to approximate the output distribution with samples.
+\end{enumerate}
+After calibration, we take our models, with learned calibration for each population group, and re-run Bisbee’s analysis with them, and see if predictions are better.
+
+\section{Baselines and Benchmarks}
+\begin{enumerate}
+    \item Sanity check: We would expect the calibrated models to perform better than uncalibrated models on their own training set
+    \item Good baseline: We would hope to see the calibrated models perform better on new questions from the same dataset, aka Bisbee’s analysis. If true, this would greatly alleviate the concerns raised by Bisbee.
+    \item Good baseline: we would hope that models calibrated on 2023 ANES would still perform well on the 2024 ANES, 2025 ANES, etc. We can analyze if their performance degrades and if so how fast
+    \item Super ideal benchmark: we would hope that our model would generalize to a new dataset with the same demographic groups, ie our model calibrated on say white male californians on ANES will still predict responses for male white californians on another survey better than an uncalibrated model
+\end{enumerate}
+
+\section{Resources}
+For option 1 of \textbf{Methods}, we will be making calls via APIs, and not running LLMs locally. As such, we will need some amount of money to make API calls, but likely not too much funding (I expect $<$ 100\$ ). We will need to make repeated calls to models to get an estimate of their output distribution, and we will need to do this for each population group.\\
+
+I have a Nvidia 3070 in my PC at home, so I can tune calibration heads on LLMs, since we won't be updating the big weights of the model.
+
+\section{Datasets and Models}
+Dataset -- ANES (https://electionstudies.org/data-center/)\\
+Closed Source Models: \begin{itemize}
+    \item Claude Opus, Claude Sonnet (https://platform.claude.com/docs/en/home)
+    \item Gemini Pro, Gemini Flash (https://ai.google.dev/gemini-api/docs)
+    \item GPT mini, GPT Pro (https://openai.com/)
+\end{itemize}
+Open Source Models:\begin{itemize}
+    \item Llama (https://www.llama.com/)
+    \item Mistral (https://docs.mistral.ai/models/overview)
+\end{itemize}
+
+We will share prompts and code on github, and provide reproducible scripts. We will also keep track of timestamps for API use, as closed-source models are often changing, which harms our reproducibility.
+
+\section{Scope}
+Our primary goal is to evaluate whether or not temperature calibration can alleviate concerns raised by Bisbee. We are not developing novel calibration techniques, nor trying to explain why predictions were overconfident in the first place. We hope that simple temperature calibration will be sufficient to show improvement, and allow future research to explore more refined calibration techniques for synthetic sampling.
+
+\newpage
+\bibliography{references}
+
+\end{document}
