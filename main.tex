@@ -5,7 +5,6 @@
 \author{Oscar Heath}
 \date{May 2026}
 \bibliographystyle{plain}
-
 \begin{document}
 
 \maketitle
@@ -17,7 +16,7 @@
 One of the most important weaknesses identified in synthetic sampling is LLM overconfidence. When generating synthetic responses to the ANES survey, Bisbee found that the distribution of responses for specific populations had far less variance than in real life, leading to data with more extreme views than in reality \cite{Bisbee}. He argues that promising results like Argyle's \cite{Argyle} work well when applied to broad groups, but break down on smaller levels of predictions. This severely limits the statistical analysis (if any) that we can perform on the synthetic data.
 
 \section{Research Question}
-The question is as follows: can LLMs calibrated on different population groups to improve their algorithmic fidelity \cite{Argyle}? If so, can these learned parameters generalize across studies? 
+The question is as follows: can LLMs be calibrated per population group to improve their algorithmic fidelity \cite{Argyle}? If so, can these learned parameters generalize across studies? 
 
 \section{Related Work}
 This project will build off of previous work in both synthetic sampling, as well as in Machine Learning (ML) calibration.
@@ -35,8 +34,8 @@ The simplest way to run this experiment is as follows:
 Take the dataset from Argyle et al. \cite{Argyle} (ANES dataset), and calibrate LLMs on the different populations. We can do different levels of calibration, but I want to start with just running simple temperature calibration \cite{guo}. For each population subgroup $g$, we want to learn $T_g$, the temperature setting that minimizes the KL divergence $KL(P_{ANES} || P_{Synthetic})$.
 This can be done in one of two ways:
 \begin{enumerate}
-    \item We can use a closed source model (eg Claude, Gemini, GPT...) and learn calibration empirically, searching a range of preset values. Given that we only have samples, we would need to generate many samples, and approximate the output distribution of the LLM, calculate KL divergence, then take the best $\hat{T_g}$ for each group
-    \item We can use an open-weight model, freeze the weights, and train a calibration head on top of it. This has the benefit of giving us a continuous loss function, so we won't have to approximate the output distribution with samples.
+    \item We can use a closed source model (eg Claude, Gemini, GPT...) and learn calibration empirically, searching a range of preset values. Given that we only have samples and not logits, we would need to generate many samples, and approximate the output distribution of the LLM, calculate KL divergence, then take the best $\hat{T_g}$ for each group
+    \item We can use an open-weight model, freeze the weights, and train a calibration head on top of it. This has the benefit of giving us a continuous loss function, so we won't have to approximate the output distribution with samples, we will have the raw logits of the model
 \end{enumerate}
 After calibration, we take our models, with learned calibration for each population group, and re-run Bisbee’s analysis with them, and see if predictions are better.
 
@@ -44,14 +43,14 @@ After calibration, we take our models, with learned calibration for each populat
 \begin{enumerate}
     \item Sanity check: We would expect the calibrated models to perform better than uncalibrated models on their own training set
     \item Good baseline: We would hope to see the calibrated models perform better on new questions from the same dataset, aka Bisbee’s analysis. If true, this would greatly alleviate the concerns raised by Bisbee.
-    \item Good baseline: we would hope that models calibrated on 2023 ANES would still perform well on the 2024 ANES, 2025 ANES, etc. We can analyze if their performance degrades and if so how fast
+    \item Good baseline: we would hope that models calibrated on 2023 ANES would still perform well on the 2024 ANES, 2025 ANES, etc. We can analyze if their performance degrades year to year, and if so how fast
     \item Super ideal benchmark: we would hope that our model would generalize to a new dataset with the same demographic groups, ie our model calibrated on say white male californians on ANES will still predict responses for male white californians on another survey better than an uncalibrated model
 \end{enumerate}
 
 \section{Resources}
 For option 1 of \textbf{Methods}, we will be making calls via APIs, and not running LLMs locally. As such, we will need some amount of money to make API calls, but likely not too much funding (I expect $<$ 100\$ ). We will need to make repeated calls to models to get an estimate of their output distribution, and we will need to do this for each population group.\\
 
-I have a Nvidia 3070 in my PC at home, so I can tune calibration heads on LLMs, since we won't be updating the big weights of the model.
+I have a Nvidia 3070 in my PC at home, so I can tune calibration heads on LLMs for option 2, since we won't be updating the big weights of the model.
 
 \section{Datasets and Models}
 Dataset -- ANES (https://electionstudies.org/data-center/)\\
